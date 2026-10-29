@@ -3,16 +3,24 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { nxReadySignal } from '@nx/vite/plugins/nx-ready-signal.plugin';
 
+import { readFileSync } from 'node:fs';
+// ...
+const proxy = JSON.parse(
+  readFileSync(new URL('./proxy.conf.json', import.meta.url), 'utf-8'),
+);
+
 export default defineConfig(() => ({
   root: import.meta.dirname,
   cacheDir: '../../node_modules/.vite/apps/react-front',
   server: {
     port: 4200,
     host: 'localhost',
+    proxy,
   },
   preview: {
     port: 4300,
     host: 'localhost',
+    proxy,
   },
   plugins: [react(), nxReadySignal()],
   // Uncomment this if you are using workers.
