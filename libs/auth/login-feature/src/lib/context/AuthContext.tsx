@@ -1,16 +1,23 @@
-import { createContext, ReactNode, useContext, useState } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { AuthApi } from '../data-access/auth.api';
-import z from 'zod';
 
 export type LoginResult =
   | { status: 'success' }
   | { status: 'invalid-credentials' }
   | { status: 'server-error'; httpStatus: number };
 
+export type Roles = 'CATALOG_ADMIN' | 'CATALOG_EDITOR'
+export type AuthUser = {
+  email: string;
+  roles: Roles[];
+  tenant: {id: string, name: string};
+}
+
 interface AuthContextType {
-  token: string | null;
+  user: AuthUser | null;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<LoginResult>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,43 +26,49 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-const tokenSchema = z.object({
-  accessToken: z.string().min(1)
-})
-
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [token, setToken] = useState<string | null>(() => {
-    try {
-      const savedToken = localStorage.getItem('token');
-      return savedToken;
-    } catch {
-      return null;
-    }
-  });
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userResponse = await AuthApi.whoami();
+        if (userResponse.ok) {
+          setUser(await userResponse.json());
+        }
+      } catch {
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchUser();
+  }, []);
 
   async function login(email: string, password: string): Promise<LoginResult> {
     const response = await AuthApi.login(email, password);
 
     if (response.status === 401) return { status: 'invalid-credentials' };
-    if (!response.ok) {
-      return { status: 'server-error', httpStatus: response.status };
-    }
-    const result = tokenSchema.safeParse(await response.json())
+    if (!response.ok) return { status: 'server-error', httpStatus: response.status };
 
-    if(!result) return { status: 'server-error', httpStatus: 200};
-    
-    const token = result.data?.accessToken;
-    localStorage.setItem('token', token as string);
-    setToken(token as string);
+    const userResponse = await AuthApi.whoami();
+    if (!userResponse.ok) return { status: 'server-error', httpStatus: userResponse.status };
+
+    setUser(await userResponse.json());
     return { status: 'success' };
   }
 
-  function logout() {
-    localStorage.removeItem('token');
-    setToken(null);
+  async function logout() {
+    try {
+      await AuthApi.logout();
+    } finally {
+      setUser(null);
+    }
   }
+
   return (
-    <AuthContext.Provider value={{ token, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
