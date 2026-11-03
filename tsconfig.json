@@ -11,6 +11,9 @@
     },
     {
       "path": "./libs/auth/login-feature"
+    },
+    {
+      "path": "./libs/academic-offer/courses-crud-feature"
     }
   ]
 }
