@@ -8,7 +8,7 @@ export function App() {
       <Routes>
         <Route path="/login" element={<LoginFeature />} />
         <Route element={<ProtectedRoute />}>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/*" element={<Dashboard />} />
         </Route>
       </Routes>
     </div>
