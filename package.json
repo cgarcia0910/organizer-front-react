@@ -8,6 +8,7 @@
   },
   "private": true,
   "dependencies": {
+    "@cgarcia0910/api-academiccatalog": "^1.0.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@hookform/resolvers": "^6.0.2",
