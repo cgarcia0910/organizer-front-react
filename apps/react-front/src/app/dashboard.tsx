@@ -9,7 +9,7 @@ import {
 
 import { LoginAppBar } from "../components/LoginAppBar";
 import { SidebarMenu } from "../components/SidebarMenu";
-import { CoursesPage } from "../components/CoursesPage";
+import { CoursesPage } from '@react-front/courses-crud-feature'
 import { Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "@react-front/login-feature";
 
@@ -67,7 +67,7 @@ export function Dashboard() {
         </Typography> */}
 
         {/* TÍTULO */}
-        <Typography
+        {/* <Typography
           variant="h4"
           sx={{
             mb: 3,
@@ -76,7 +76,7 @@ export function Dashboard() {
           }}
         >
           {activeSection}
-        </Typography>
+        </Typography> */}
 
         {/* CONTENIDO */}
         <Paper
@@ -88,19 +88,11 @@ export function Dashboard() {
             minHeight: 250,
           }}
         >
-
-          <Typography variant="h6" sx={{ mb: 1 }}>
-            {activeSection}
-          </Typography>
           <Routes>
                   <Route element={<ProtectedRoute />}>
                     <Route path="/academic-offer/courses" element={<CoursesPage />} />
                   </Route>
                 </Routes>
-          <Typography color="text.secondary">
-            Contenido de la sección {activeSection}.
-          </Typography>
-
         </Paper>
 
       </Box>
