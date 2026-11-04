@@ -20,7 +20,7 @@ describe('loginSchema', () => {
   describe('email', () => {
     it('reports "required" for an empty string', () => {
       expect(firstError({ email: '', password: 'x' }, 'email')).toBe(
-        'Email is required.'
+        'Email is required.',
       );
     });
 
@@ -30,29 +30,29 @@ describe('loginSchema', () => {
     });
 
     it('reports the format message for a value without @', () => {
-      expect(firstError({ email: 'not-an-email', password: 'x' }, 'email')).toBe(
-        'Please enter a valid email address.'
-      );
+      expect(
+        firstError({ email: 'not-an-email', password: 'x' }, 'email'),
+      ).toBe('Please enter a valid email address.');
     });
 
     it('reports the format message for a value without a domain', () => {
       expect(firstError({ email: 'user@', password: 'x' }, 'email')).toBe(
-        'Please enter a valid email address.'
+        'Please enter a valid email address.',
       );
     });
 
     it('does not report the format message for an empty string', () => {
       expect(firstError({ email: '', password: 'x' }, 'email')).not.toBe(
-        'Please enter a valid email address.'
+        'Please enter a valid email address.',
       );
     });
   });
 
   describe('password', () => {
     it('reports "required" for an empty string', () => {
-      expect(firstError({ email: 'user@test.com', password: '' }, 'password')).toBe(
-        'Password is required.'
-      );
+      expect(
+        firstError({ email: 'user@test.com', password: '' }, 'password'),
+      ).toBe('Password is required.');
     });
 
     it('rejects a missing field with a zod type error', () => {

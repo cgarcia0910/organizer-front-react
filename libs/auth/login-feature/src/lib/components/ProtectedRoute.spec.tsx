@@ -38,7 +38,7 @@ function renderAt(route: string) {
           <Route path="/calendar" element={<div>Calendar page</div>} />
         </Route>
       </Routes>
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 

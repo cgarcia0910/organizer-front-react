@@ -1,2 +1,1 @@
-export * from './lib/courses-crud-feature';
-export * from './lib/courses-page'
+export * from './lib/presentation/pages/courses-page';
