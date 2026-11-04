@@ -1,4 +1,10 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { AuthApi } from '../data-access/auth.api';
 
 export type LoginResult =
@@ -6,12 +12,12 @@ export type LoginResult =
   | { status: 'invalid-credentials' }
   | { status: 'server-error'; httpStatus: number };
 
-export type Roles = 'CATALOG_ADMIN' | 'CATALOG_EDITOR'
+export type Roles = 'CATALOG_ADMIN' | 'CATALOG_EDITOR';
 export type AuthUser = {
   email: string;
   roles: Roles[];
-  tenant: {id: string, name: string};
-}
+  tenant: { id: string; name: string };
+};
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -50,10 +56,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const response = await AuthApi.login(email, password);
 
     if (response.status === 401) return { status: 'invalid-credentials' };
-    if (!response.ok) return { status: 'server-error', httpStatus: response.status };
+    if (!response.ok)
+      return { status: 'server-error', httpStatus: response.status };
 
     const userResponse = await AuthApi.whoami();
-    if (!userResponse.ok) return { status: 'server-error', httpStatus: userResponse.status };
+    if (!userResponse.ok)
+      return { status: 'server-error', httpStatus: userResponse.status };
 
     setUser(await userResponse.json());
     return { status: 'success' };

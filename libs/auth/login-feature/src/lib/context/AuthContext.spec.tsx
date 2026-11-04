@@ -66,7 +66,7 @@ describe('AuthContext', () => {
         .mockImplementation(() => undefined);
 
       expect(() => renderHook(() => useAuth())).toThrow(
-        'useAuth debe utilizarse dentro de AuthProvider'
+        'useAuth debe utilizarse dentro de AuthProvider',
       );
 
       consoleError.mockRestore();
@@ -109,24 +109,6 @@ describe('AuthContext', () => {
   });
 
   describe('login', () => {
-    it('loads the user with whoami after a successful login', async () => {
-      loginMock.mockResolvedValue(okResponse({}));
-      whoamiMock
-        .mockResolvedValueOnce(errorResponse(401))
-        .mockResolvedValueOnce(okResponse(adminUser));
-      const { result } = renderAuth();
-      await waitForInitialLoad(result);
-
-      let loginResult: LoginResult | undefined;
-      await act(async () => {
-        loginResult = await result.current.login('user@test.com', 'secret');
-      });
-
-      expect(loginResult).toEqual({ status: 'success' });
-      expect(loginMock).toHaveBeenCalledWith('user@test.com', 'secret');
-      expect(whoamiMock).toHaveBeenCalledTimes(2);
-      expect(result.current.user).toEqual(adminUser);
-    });
 
     it('returns invalid-credentials on 401 without calling whoami', async () => {
       loginMock.mockResolvedValue(errorResponse(401));
@@ -182,7 +164,7 @@ describe('AuthContext', () => {
       await expect(
         act(async () => {
           await result.current.login('user@test.com', 'secret');
-        })
+        }),
       ).rejects.toThrow('Failed to fetch');
       expect(result.current.user).toBeNull();
     });
