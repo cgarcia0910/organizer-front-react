@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { AuthUser } from '../context/AuthContext';
 import { ProtectedRoute } from './ProtectedRoute';
 
 const { useAuthMock } = vi.hoisted(() => ({ useAuthMock: vi.fn() }));
@@ -8,6 +9,12 @@ const { useAuthMock } = vi.hoisted(() => ({ useAuthMock: vi.fn() }));
 vi.mock('../context/AuthContext', () => ({
   useAuth: useAuthMock,
 }));
+
+const adminUser: AuthUser = {
+  email: 'user@test.com',
+  roles: ['CATALOG_ADMIN'],
+  tenant: { id: 't1', name: 'Tenant' },
+};
 
 function LoginPage() {
   const location = useLocation();
@@ -40,8 +47,18 @@ describe('ProtectedRoute', () => {
     useAuthMock.mockReset();
   });
 
-  it('redirects to /login when there is no token', () => {
-    useAuthMock.mockReturnValue({ token: null });
+  it('shows a loading state and does not redirect while the session is being restored', () => {
+    useAuthMock.mockReturnValue({ user: null, isLoading: true });
+
+    renderAt('/');
+
+    expect(screen.getByText('Cargando...')).toBeTruthy();
+    expect(screen.queryByText('Login page')).toBeNull();
+    expect(screen.queryByText('Home page')).toBeNull();
+  });
+
+  it('redirects to /login when there is no user', () => {
+    useAuthMock.mockReturnValue({ user: null, isLoading: false });
 
     renderAt('/');
 
@@ -49,8 +66,8 @@ describe('ProtectedRoute', () => {
     expect(screen.queryByText('Home page')).toBeNull();
   });
 
-  it('renders the protected content when there is a token', () => {
-    useAuthMock.mockReturnValue({ token: 'fake-token' });
+  it('renders the protected content when there is a user', () => {
+    useAuthMock.mockReturnValue({ user: adminUser, isLoading: false });
 
     renderAt('/');
 
@@ -59,7 +76,7 @@ describe('ProtectedRoute', () => {
   });
 
   it('keeps the requested path in location.state.from when redirecting', () => {
-    useAuthMock.mockReturnValue({ token: null });
+    useAuthMock.mockReturnValue({ user: null, isLoading: false });
 
     renderAt('/calendar');
 
@@ -68,7 +85,7 @@ describe('ProtectedRoute', () => {
   });
 
   it('renders the matching nested route when authenticated', () => {
-    useAuthMock.mockReturnValue({ token: 'fake-token' });
+    useAuthMock.mockReturnValue({ user: adminUser, isLoading: false });
 
     renderAt('/calendar');
 

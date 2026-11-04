@@ -6,7 +6,7 @@ import LoginFeature from './login-feature';
 const { loginMock } = vi.hoisted(() => ({ loginMock: vi.fn() }));
 
 vi.mock('./context/AuthContext', () => ({
-  useAuth: () => ({ login: loginMock, logout: vi.fn(), token: null }),
+  useAuth: () => ({ login: loginMock, logout: vi.fn(), user: null, isLoading: false }),
 }));
 
 function renderLogin() {

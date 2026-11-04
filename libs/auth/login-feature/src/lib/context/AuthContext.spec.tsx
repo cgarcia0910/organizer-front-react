@@ -1,13 +1,23 @@
-import { act, renderHook } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AuthProvider, type LoginResult, useAuth } from './AuthContext';
+import { AuthProvider, type AuthUser, type LoginResult, useAuth } from './AuthContext';
 
-const { loginMock } = vi.hoisted(() => ({ loginMock: vi.fn() }));
+const { loginMock, whoamiMock, logoutMock } = vi.hoisted(() => ({
+  loginMock: vi.fn(),
+  whoamiMock: vi.fn(),
+  logoutMock: vi.fn(),
+}));
 
 vi.mock('../data-access/auth.api', () => ({
-  AuthApi: { login: loginMock },
+  AuthApi: { login: loginMock, whoami: whoamiMock, logout: logoutMock },
 }));
+
+const adminUser: AuthUser = {
+  email: 'user@test.com',
+  roles: ['CATALOG_ADMIN'],
+  tenant: { id: 't1', name: 'Tenant' },
+};
 
 function wrapper({ children }: { children: ReactNode }) {
   return <AuthProvider>{children}</AuthProvider>;
@@ -16,6 +26,7 @@ function wrapper({ children }: { children: ReactNode }) {
 function okResponse(body: unknown) {
   return {
     ok: true,
+    status: 200,
     json: async () => body,
   } as unknown as Response;
 }
@@ -28,10 +39,24 @@ function errorResponse(status: number) {
   } as unknown as Response;
 }
 
+function renderAuth() {
+  return renderHook(() => useAuth(), { wrapper });
+}
+
+async function waitForInitialLoad(result: ReturnType<typeof renderAuth>['result']) {
+  await waitFor(() => expect(result.current.isLoading).toBe(false));
+}
+
 describe('AuthContext', () => {
   beforeEach(() => {
     localStorage.clear();
     loginMock.mockReset();
+    whoamiMock.mockReset();
+    logoutMock.mockReset();
+
+    // Sin sesión por defecto: el montaje de AuthProvider llama a whoami.
+    whoamiMock.mockResolvedValue(errorResponse(401));
+    logoutMock.mockResolvedValue(okResponse({}));
   });
 
   describe('useAuth', () => {
@@ -49,27 +74,48 @@ describe('AuthContext', () => {
   });
 
   describe('initial state', () => {
-    it('starts with a null token when localStorage is empty', () => {
-      const { result } = renderHook(() => useAuth(), { wrapper });
+    it('starts loading and ends with no user when there is no session', async () => {
+      const { result } = renderAuth();
 
-      expect(result.current.token).toBeNull();
+      expect(result.current.isLoading).toBe(true);
+
+      await waitForInitialLoad(result);
+
+      expect(result.current.user).toBeNull();
     });
 
-    it('hydrates the token saved in localStorage', () => {
-      localStorage.setItem('token', 'saved-token');
+    it('restores the user from the session cookie through whoami', async () => {
+      whoamiMock.mockResolvedValue(okResponse(adminUser));
 
-      const { result } = renderHook(() => useAuth(), { wrapper });
+      const { result } = renderAuth();
+      await waitForInitialLoad(result);
 
-      expect(result.current.token).toBe('saved-token');
+      expect(result.current.user).toEqual(adminUser);
+      expect(whoamiMock).toHaveBeenCalledTimes(1);
     });
+
+    it('ends loading with no user when whoami rejects', async () => {
+      whoamiMock.mockRejectedValue(new TypeError('Failed to fetch'));
+
+      const { result } = renderAuth();
+      await waitForInitialLoad(result);
+
+      expect(result.current.user).toBeNull();
+    });
+
+    // Pendiente: el payload de whoami no se valida; un 200 con forma inesperada
+    // se guarda tal cual en `user`.
+    it.todo('validates the whoami payload shape');
   });
 
   describe('login', () => {
-    it('stores the access token and returns success', async () => {
-      loginMock.mockResolvedValue(
-        okResponse({ accessToken: 'new-token' })
-      );
-      const { result } = renderHook(() => useAuth(), { wrapper });
+    it('loads the user with whoami after a successful login', async () => {
+      loginMock.mockResolvedValue(okResponse({}));
+      whoamiMock
+        .mockResolvedValueOnce(errorResponse(401))
+        .mockResolvedValueOnce(okResponse(adminUser));
+      const { result } = renderAuth();
+      await waitForInitialLoad(result);
 
       let loginResult: LoginResult | undefined;
       await act(async () => {
@@ -77,14 +123,15 @@ describe('AuthContext', () => {
       });
 
       expect(loginResult).toEqual({ status: 'success' });
-      expect(result.current.token).toBe('new-token');
-      expect(localStorage.getItem('token')).toBe('new-token');
       expect(loginMock).toHaveBeenCalledWith('user@test.com', 'secret');
+      expect(whoamiMock).toHaveBeenCalledTimes(2);
+      expect(result.current.user).toEqual(adminUser);
     });
 
-    it('returns invalid-credentials on 401 and keeps the session empty', async () => {
+    it('returns invalid-credentials on 401 without calling whoami', async () => {
       loginMock.mockResolvedValue(errorResponse(401));
-      const { result } = renderHook(() => useAuth(), { wrapper });
+      const { result } = renderAuth();
+      await waitForInitialLoad(result);
 
       let loginResult: LoginResult | undefined;
       await act(async () => {
@@ -92,13 +139,31 @@ describe('AuthContext', () => {
       });
 
       expect(loginResult).toEqual({ status: 'invalid-credentials' });
-      expect(result.current.token).toBeNull();
-      expect(localStorage.getItem('token')).toBeNull();
+      expect(whoamiMock).toHaveBeenCalledTimes(1); // solo el del montaje
+      expect(result.current.user).toBeNull();
     });
 
-    it('returns server-error with the HTTP status on 500', async () => {
-      loginMock.mockResolvedValue(errorResponse(500));
-      const { result } = renderHook(() => useAuth(), { wrapper });
+    it.each([500, 429])('returns server-error with the HTTP status %i', async (status) => {
+      loginMock.mockResolvedValue(errorResponse(status));
+      const { result } = renderAuth();
+      await waitForInitialLoad(result);
+
+      let loginResult: LoginResult | undefined;
+      await act(async () => {
+        loginResult = await result.current.login('user@test.com', 'secret');
+      });
+
+      expect(loginResult).toEqual({ status: 'server-error', httpStatus: status });
+      expect(result.current.user).toBeNull();
+    });
+
+    it('returns server-error when login succeeds but whoami fails', async () => {
+      loginMock.mockResolvedValue(okResponse({}));
+      whoamiMock
+        .mockResolvedValueOnce(errorResponse(401))
+        .mockResolvedValueOnce(errorResponse(500));
+      const { result } = renderAuth();
+      await waitForInitialLoad(result);
 
       let loginResult: LoginResult | undefined;
       await act(async () => {
@@ -106,49 +171,74 @@ describe('AuthContext', () => {
       });
 
       expect(loginResult).toEqual({ status: 'server-error', httpStatus: 500 });
-      expect(localStorage.getItem('token')).toBeNull();
-    });
-
-    it('returns server-error with the HTTP status on 429', async () => {
-      loginMock.mockResolvedValue(errorResponse(429));
-      const { result } = renderHook(() => useAuth(), { wrapper });
-
-      let loginResult: LoginResult | undefined;
-      await act(async () => {
-        loginResult = await result.current.login('user@test.com', 'secret');
-      });
-
-      expect(loginResult).toEqual({ status: 'server-error', httpStatus: 429 });
+      expect(result.current.user).toBeNull();
     });
 
     it('propagates network errors so the form can show them', async () => {
       loginMock.mockRejectedValue(new TypeError('Failed to fetch'));
-      const { result } = renderHook(() => useAuth(), { wrapper });
+      const { result } = renderAuth();
+      await waitForInitialLoad(result);
 
       await expect(
         act(async () => {
           await result.current.login('user@test.com', 'secret');
         })
       ).rejects.toThrow('Failed to fetch');
-      expect(localStorage.getItem('token')).toBeNull();
+      expect(result.current.user).toBeNull();
     });
 
-    // Pendiente: hoy un 200 sin accessToken guarda la cadena "undefined"
-    // y deja al usuario autenticado. Convertir en test real al validar la respuesta.
-    it.todo('rejects a 200 response that has no accessToken');
+    it('does not write anything to browser storage', async () => {
+      const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
+      loginMock.mockResolvedValue(okResponse({}));
+      whoamiMock
+        .mockResolvedValueOnce(errorResponse(401))
+        .mockResolvedValueOnce(okResponse(adminUser));
+      const { result } = renderAuth();
+      await waitForInitialLoad(result);
+
+      await act(async () => {
+        await result.current.login('user@test.com', 'secret');
+      });
+
+      expect(setItemSpy).not.toHaveBeenCalled();
+      expect(localStorage.length).toBe(0);
+
+      setItemSpy.mockRestore();
+    });
   });
 
   describe('logout', () => {
-    it('clears the token from state and localStorage', async () => {
-      localStorage.setItem('token', 'saved-token');
-      const { result } = renderHook(() => useAuth(), { wrapper });
+    it('calls the logout endpoint and clears the user', async () => {
+      whoamiMock.mockResolvedValue(okResponse(adminUser));
+      const { result } = renderAuth();
+      await waitForInitialLoad(result);
+      expect(result.current.user).toEqual(adminUser);
 
-      act(() => {
-        result.current.logout();
+      await act(async () => {
+        await result.current.logout();
       });
 
-      expect(result.current.token).toBeNull();
-      expect(localStorage.getItem('token')).toBeNull();
+      expect(logoutMock).toHaveBeenCalledTimes(1);
+      expect(result.current.user).toBeNull();
+    });
+
+    it('still clears the user when the logout request fails', async () => {
+      whoamiMock.mockResolvedValue(okResponse(adminUser));
+      logoutMock.mockRejectedValue(new TypeError('Failed to fetch'));
+      const { result } = renderAuth();
+      await waitForInitialLoad(result);
+
+      let logoutError: unknown;
+      await act(async () => {
+        try {
+          await result.current.logout();
+        } catch (error) {
+          logoutError = error;
+        }
+      });
+
+      expect((logoutError as Error).message).toBe('Failed to fetch');
+      expect(result.current.user).toBeNull();
     });
   });
 });
