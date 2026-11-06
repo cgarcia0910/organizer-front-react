@@ -14,7 +14,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { Dispatch, SetStateAction, useState } from 'react';
-
+import { useAuth } from '@react-front/login-feature';
 interface LoginAppBarProps {
   mobileOpen: boolean;
   setMobileOpen: Dispatch<SetStateAction<boolean>>;
@@ -29,11 +29,13 @@ const initials = (userName: string) =>
     .toUpperCase();
 
 export function LoginAppBar({ mobileOpen, setMobileOpen }: LoginAppBarProps) {
-  // const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenu, setUserMenu] = useState<null | HTMLElement>(null);
-  const userName = 'Juan Pérez';
-  const userRole = 'Administrador';
-  const handleLogout = () => console.log('logout');
+  const { logout, user } = useAuth()
+  const userName = user?.email ?? '';
+  const userRole = user?.roles.join(',');
+  const handleLogout = () => {
+    logout();
+  };
   const handleProfile = () => console.log('profile');
   return (
     <AppBar
@@ -118,10 +120,10 @@ export function LoginAppBar({ mobileOpen, setMobileOpen }: LoginAppBarProps) {
               horizontal: 'right',
             }}
           >
-            <MenuItem onClick={handleProfile}>
+            {/* <MenuItem onClick={handleProfile}>
               <AccountCircleIcon fontSize="small" sx={{ mr: 1 }} />
               Mi perfil
-            </MenuItem>
+            </MenuItem> */}
 
             <Divider />
 

@@ -13,11 +13,11 @@ export default defineConfig(() => ({
     host: 'localhost',
     proxy: {
       '/api': {
-        target: 'http://172.18.240.1:8080',
+        target: 'http://172.23.96.1:8080',
         changeOrigin: true,
       },
       '/resources': {
-        target: 'http://172.18.240.1:8080',
+        target: 'http://172.23.96.1:8080',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/resources/, ''),
       },
@@ -28,11 +28,11 @@ export default defineConfig(() => ({
     host: 'localhost',
     proxy: {
       '/api': {
-        target: 'http://172.18.240.1:8080',
+        target: 'http://172.23.96.1:8080',
         changeOrigin: true,
       },
       '/resources': {
-        target: 'http://172.18.240.1:8080',
+        target: 'http://172.23.96.1:8080',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/resources/, ''),
       },
