@@ -1,3 +1,5 @@
+import { Subject } from "./subject";
+
 export type CourseStatus = 'ACTIVE' | 'INACTIVE';
 
 export interface Course {
@@ -10,4 +12,6 @@ export interface Course {
   updatedAt: string;
 }
 
-export type CreateCourse = Omit<Course, 'createdAt' | 'updatedAt' | 'id'>;
+export type CreateCourse = Omit<Course, 'createdAt' | 'updatedAt' | 'id'> & {subjects: Subject[]};
+
+export type UpdateCourse = Omit<Course, 'createdAt' | 'updatedAt'> & {subjects: Subject[]};
