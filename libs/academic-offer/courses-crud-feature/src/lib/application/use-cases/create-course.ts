@@ -7,8 +7,7 @@ export async function createCourse(course: CreateCourse) {
   const request = await courseApi.createCourse(course);
   const courseData = (await request()).data; 
 
-  const subjects = course.subjects.map(sb => ({...sb, code: sb.name}))
-  const subjectsRequest = await subjectsApi.createSubject(courseData.id, subjects);
+  const subjectsRequest = await subjectsApi.createSubject(courseData.id, course.subjects);
   (await subjectsRequest())
   return course;
 }

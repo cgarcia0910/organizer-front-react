@@ -1,4 +1,4 @@
-import { Box, Drawer } from '@mui/material';
+import { Alert, Box, Drawer, Snackbar } from '@mui/material';
 
 import { CoursesHeader } from '../components/CoursesHeader';
 import { CoursesFilter } from '../components/CoursesFilters';
@@ -34,6 +34,7 @@ export function CoursesPage() {
   const [search, onSearchChange] = useState<string | undefined>(undefined);
   const [open, setOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState<UpdateCourse | undefined>();
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [statusFilter, onStatusChange] = useState<string>()
   const { data, isLoading } = useCourses(
     paginationModel.page,
@@ -47,9 +48,13 @@ export function CoursesPage() {
   };
 
   const onEdit = async (course: UpdateCourse) => {
-    const subjects = await getCourseSubjects(course.id)
-    setEditingCourse({...course, subjects: subjects.items});
-    setOpen(true);
+    try {
+      const subjects = await getCourseSubjects(course.id)
+      setEditingCourse({...course, subjects});
+      setOpen(true);
+    } catch {
+      setLoadError('No se pudieron cargar las asignaturas del curso. Inténtalo de nuevo.');
+    }
   };
 
   const onDelete = (course: Course) => {
@@ -80,6 +85,16 @@ export function CoursesPage() {
           course={editingCourse}
         />
       </Drawer>
+      <Snackbar
+        open={loadError !== null}
+        autoHideDuration={6000}
+        onClose={() => setLoadError(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="error" onClose={() => setLoadError(null)}>
+          {loadError}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import {
+  Alert,
   Box,
   Paper,
   Typography,
@@ -39,6 +41,9 @@ export const courseSchema = z.object({
   status: z.literal(['ACTIVE', 'INACTIVE']),
   subjects: z.array(
       z.object({
+        // Presente solo en asignaturas existentes; zod la conservaría, si no la eliminaría.
+        id: z.string().optional(),
+
         name: z
           .string()
           .trim()
@@ -112,13 +117,24 @@ export default function NewEditCourseForm({
   const { ref: nameRef, ...nameField } = register('name');
   const { ref: codeRef, ...codeField } = register('code');
   const { ref: descriptionRef, ...descriptionField } = register('description');
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   const onSubmit: SubmitHandler<CourseFormValues> = async (data) => {
-    if (course) {
-      updateCourseMutation.mutate({ ...course, ...data });
-    } else {
-      createCourseMutation.mutate(data);
+    setSaveError(null);
+    try {
+      if (course) {
+        await updateCourseMutation.mutateAsync({ ...course, ...data });
+      } else {
+        await createCourseMutation.mutateAsync(data);
+      }
+      onClose();
+    } catch (error) {
+      setSaveError(
+        error instanceof Error
+          ? `No se pudo guardar el curso: ${error.message}`
+          : 'No se pudo guardar el curso. Inténtalo de nuevo.',
+      );
     }
-    onClose();
   };
   const subjects = useWatch({
     control,
@@ -524,6 +540,12 @@ export default function NewEditCourseForm({
         
         {/* Acciones */}
         <Divider sx={{ mt: 2.5, mb: 2.5 }} />
+
+        {saveError && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {saveError}
+          </Alert>
+        )}
 
         <Box>
           <Button

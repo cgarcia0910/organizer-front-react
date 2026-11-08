@@ -4,7 +4,14 @@ import { type GridColDef } from '@mui/x-data-grid';
 
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
-import { Course } from '../../domain/entities/courses';
+import { Course, CourseStatus } from '../../domain/entities/courses';
+
+const COURSE_STATUS_CHIP: Partial<
+  Record<CourseStatus, { label: string; color: 'success' | 'default' }>
+> = {
+  ACTIVE: { label: 'Activo', color: 'success' },
+  INACTIVE: { label: 'Inactivo', color: 'default' },
+};
 
 interface CourseColumnsHandlers {
   onEdit: (course: Course) => void;
@@ -42,34 +49,18 @@ export function getCourseColumns({
       ),
     },
     {
-      field: 'modality',
-      headerName: 'Modalidad',
-      minWidth: 130,
-      flex: 0.8,
-    },
-    {
-      field: 'duration',
-      headerName: 'Duración',
-      minWidth: 110,
-      flex: 0.6,
-      valueFormatter: (value) => `${value} horas`,
-    },
-    {
       field: 'status',
       headerName: 'Estado',
       minWidth: 120,
       flex: 0.7,
       renderCell: (params) => {
-        const color =
-          params.value === 'Activo'
-            ? 'success'
-            : params.value === 'Borrador'
-              ? 'warning'
-              : 'default';
+        const statusConfig = COURSE_STATUS_CHIP[params.value as CourseStatus];
+        const color = statusConfig?.color ?? 'default';
+        const label = statusConfig?.label ?? params.value;
 
         return (
           <Chip
-            label={params.value}
+            label={label}
             color={color}
             size="small"
             variant="outlined"
