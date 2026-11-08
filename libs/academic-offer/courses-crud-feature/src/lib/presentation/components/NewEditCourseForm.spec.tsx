@@ -182,5 +182,35 @@ describe('NewEditCourseForm', () => {
       expect(sent[1]).not.toHaveProperty('id');
       expect(sent[1].name).toBe('Física');
     });
+
+    it('pasa la lista cargada como originalSubjects', async () => {
+      updateMutateAsync.mockResolvedValue({});
+      const loaded: UpdateCourse['subjects'] = [
+        { id: 'subj-1', code: 'ALG', name: 'Álgebra', hoursPerWeek: 4, maxHoursPerDay: 2 },
+        { id: 'subj-2', code: 'GEO', name: 'Geometría', hoursPerWeek: 3, maxHoursPerDay: 1 },
+      ];
+      render(<NewEditCourseForm onClose={vi.fn()} course={{ ...existingCourse, subjects: loaded }} />);
+
+      fireEvent.click(screen.getByText('Guardar curso'));
+
+      await waitFor(() => expect(updateMutateAsync).toHaveBeenCalledTimes(1));
+      expect(updateMutateAsync.mock.calls[0][0].originalSubjects).toEqual(loaded);
+    });
+
+    it('al modificar una asignatura existente, subjects lleva el valor nuevo y originalSubjects el anterior', async () => {
+      updateMutateAsync.mockResolvedValue({});
+      const loaded: UpdateCourse['subjects'] = [
+        { id: 'subj-1', code: 'ALG', name: 'Álgebra', hoursPerWeek: 4, maxHoursPerDay: 2 },
+      ];
+      render(<NewEditCourseForm onClose={vi.fn()} course={{ ...existingCourse, subjects: loaded }} />);
+
+      fireEvent.change(screen.getByDisplayValue('Álgebra'), { target: { value: 'Álgebra lineal' } });
+      fireEvent.click(screen.getByText('Guardar curso'));
+
+      await waitFor(() => expect(updateMutateAsync).toHaveBeenCalledTimes(1));
+      const call = updateMutateAsync.mock.calls[0][0];
+      expect(call.subjects[0]).toMatchObject({ id: 'subj-1', name: 'Álgebra lineal' });
+      expect(call.originalSubjects[0]).toMatchObject({ id: 'subj-1', name: 'Álgebra' });
+    });
   });
 });

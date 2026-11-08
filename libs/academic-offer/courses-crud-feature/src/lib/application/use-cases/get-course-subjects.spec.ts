@@ -46,8 +46,8 @@ describe('getCourseSubjects', () => {
 
     expect(result.map((s) => s.id)).toEqual(['1', '2', '3']);
     expect(listSubjectsMock).toHaveBeenCalledTimes(2);
-    expect(listSubjectsMock.mock.calls[0]).toEqual(['course-1', 0, 50, undefined, true]);
-    expect(listSubjectsMock.mock.calls[1]).toEqual(['course-1', 1, 50, undefined, true]);
+    expect(listSubjectsMock.mock.calls[0]).toEqual(['course-1', 0, 50, undefined, false]);
+    expect(listSubjectsMock.mock.calls[1]).toEqual(['course-1', 1, 50, undefined, false]);
   });
 
   it('rechaza si una página falla y nunca devuelve una lista parcial', async () => {

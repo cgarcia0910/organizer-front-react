@@ -26,7 +26,7 @@ export async function getCourseSubjects(
       page,
       SUBJECTS_PAGE_SIZE,
       undefined,
-      true,
+      false,
     );
     const data = (await request()).data;
     items.push(...data.items);

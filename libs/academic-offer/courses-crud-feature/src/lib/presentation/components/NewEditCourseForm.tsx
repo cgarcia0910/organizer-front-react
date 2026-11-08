@@ -18,7 +18,7 @@ import { z } from 'zod';
 import { Controller, useFieldArray, useForm, useWatch, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCreateCourse } from '../hooks/data-access/useCreateCourse';
-import { Course } from '../../domain/entities/courses';
+import { UpdateCourse } from '../../domain/entities/courses';
 import { useUpdateCourse } from '../hooks/data-access/useUpdateCourse';
 
 import {
@@ -31,7 +31,7 @@ import {
 interface NewEditCourseProps {
   onClose: () => void;
   //   onSave?: (curso: CursoForm) => void;
-  course?: Course;
+  course?: UpdateCourse;
 }
 
 export const courseSchema = z.object({
@@ -123,7 +123,12 @@ export default function NewEditCourseForm({
     setSaveError(null);
     try {
       if (course) {
-        await updateCourseMutation.mutateAsync({ ...course, ...data });
+        // La lista cargada (course.subjects) permite calcular altas, cambios y bajas.
+        await updateCourseMutation.mutateAsync({
+          ...course,
+          ...data,
+          originalSubjects: course.subjects,
+        });
       } else {
         await createCourseMutation.mutateAsync(data);
       }

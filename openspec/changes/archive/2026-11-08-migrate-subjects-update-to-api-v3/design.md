@@ -6,7 +6,7 @@ Estado actual, verificado en el código y en el paquete 3.0.0 descargado y compa
 
 - El front está en el cliente 2.0.0. `updateCourse` (use case) envía `course.subjects` como array a `updateSubjects`, y la spec principal describe ese contrato (lista completa con `id`, el back decide).
 - En la 3.0.0, `updateSubjects(courseId, UpdateSubjectsRequest)` recibe `{ new?, update?, delete? }`: `new` es una lista de `SubjectCreate`, `update` una lista de `SubjectPatch` y `delete` una lista de ids. `SubjectPatch` gana un `id` opcional. `updateSubject` (singular) desaparece. El resto de tipos y endpoints no cambia respecto a la 2.0.0, y el repositorio no usa el singular.
-- Ya está resuelto en el código actual todo lo previo a este cambio: `getCourseSubjects` carga todas las páginas, incluidas las inactivas, y devuelve asignaturas con `id`; el esquema del formulario conserva `id`. El prop `course` del formulario lleva la lista cargada en `course.subjects`, y `onSubmit` la reemplaza por la lista editada (`{ ...course, ...data }`).
+- Ya está resuelto en el código actual todo lo previo a este cambio: `getCourseSubjects` carga todas las páginas de asignaturas activas (`includeInactive=false`) y devuelve asignaturas con `id`; el esquema del formulario conserva `id`. El prop `course` del formulario lleva la lista cargada en `course.subjects`, y `onSubmit` la reemplaza por la lista editada (`{ ...course, ...data }`).
 
 Ver proposal.md para el motivo.
 

@@ -4,12 +4,12 @@
 
 ### Requirement: Edición de curso
 
-El sistema SHALL permitir editar un curso existente desde el botón "Editar curso". Antes de abrir el formulario, SHALL cargar todas sus asignaturas, incluidas las inactivas. Al guardar, SHALL comparar las asignaturas cargadas con las editadas y enviar por separado las asignaturas nuevas, las modificadas y las eliminadas.
+El sistema SHALL permitir editar un curso existente desde el botón "Editar curso". Antes de abrir el formulario, SHALL cargar todas sus asignaturas activas, recorriendo todas las páginas. Al guardar, SHALL comparar las asignaturas cargadas con las editadas y enviar por separado las asignaturas nuevas, las modificadas y las eliminadas.
 
 #### Scenario: Carga de asignaturas
 
 - **WHEN** el usuario pulsa "Editar curso"
-- **THEN** se cargan todas las asignaturas del curso, recorriendo todas las páginas de `GET /resources/courses/{id}/subjects` e incluyendo las inactivas
+- **THEN** se cargan las asignaturas activas del curso, recorriendo todas las páginas de `GET /resources/courses/{id}/subjects` sin incluir las inactivas (`includeInactive=false`)
 - **AND** el formulario se abre con los datos del curso y la lista completa de asignaturas
 
 #### Scenario: Fallo al cargar asignaturas
