@@ -5,6 +5,7 @@ import { Box, CssBaseline, Paper } from '@mui/material';
 import { LoginAppBar } from '../components/LoginAppBar';
 import { SidebarMenu } from '../components/SidebarMenu';
 import { CoursesPage } from '@react-front/courses-crud-feature';
+import { TeachersPage } from '@react-front/teacher-crud-feature';
 import { Route, Routes, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '@react-front/login-feature';
 
@@ -55,6 +56,7 @@ export function Dashboard() {
           <Routes>
             <Route element={<ProtectedRoute />}>
               <Route path="/academic-offer/courses" element={<CoursesPage />} />
+              <Route path="/academic-offer/teachers" element={<TeachersPage />} />
               <Route path="*" element={<Navigate to="/academic-offer/courses" replace />} />
             </Route>
           </Routes>

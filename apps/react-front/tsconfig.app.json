@@ -35,6 +35,9 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
+      "path": "../../libs/academic-offer/teacher-crud-feature/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/academic-offer/courses-crud-feature/tsconfig.lib.json"
     },
     {

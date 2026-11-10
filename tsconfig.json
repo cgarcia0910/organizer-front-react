@@ -14,6 +14,9 @@
     },
     {
       "path": "./libs/academic-offer/courses-crud-feature"
+    },
+    {
+      "path": "./libs/academic-offer/teacher-crud-feature"
     }
   ]
 }
