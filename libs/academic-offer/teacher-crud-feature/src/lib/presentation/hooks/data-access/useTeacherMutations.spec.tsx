@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { useCreateTeacher } from './useCreateTeacher';
 import { useUpdateTeacher } from './useUpdateTeacher';
+import { PartialSaveError } from '../../../application/errors';
 
 const { createTeacherMock, updateTeacherMock } = vi.hoisted(() => ({
   createTeacherMock: vi.fn(),
@@ -86,5 +87,65 @@ describe('useUpdateTeacher', () => {
     });
 
     expect(invalidateSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('habilitaciones en el guardado', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('useCreateTeacher invalida las habilitaciones del nuevo profesor si envió filas', async () => {
+    createTeacherMock.mockResolvedValue({ id: 't-7' });
+    const { wrapper, invalidateSpy } = setup();
+    const { result } = renderHook(() => useCreateTeacher(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        ...newTeacher,
+        habilitations: [{ courseId: 'c-1', subjectId: 's-1' }],
+      });
+    });
+
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['teacher-habilitations', 't-7'] });
+  });
+
+  it('useCreateTeacher sin filas no invalida habilitaciones', async () => {
+    createTeacherMock.mockResolvedValue({ id: 't-7' });
+    const { wrapper, invalidateSpy } = setup();
+    const { result } = renderHook(() => useCreateTeacher(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync({ ...newTeacher, habilitations: [] });
+    });
+
+    expect(invalidateSpy).not.toHaveBeenCalledWith(
+      expect.objectContaining({ queryKey: ['teacher-habilitations', 't-7'] }),
+    );
+  });
+
+  it('useCreateTeacher ante PartialSaveError invalida las habilitaciones del profesor creado', async () => {
+    createTeacherMock.mockRejectedValue(new PartialSaveError('t-9', new Error('conflicto')));
+    const { wrapper, invalidateSpy } = setup();
+    const { result } = renderHook(() => useCreateTeacher(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync(newTeacher).catch(() => undefined);
+    });
+
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['teacher-habilitations', 't-9'] });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['teachers'] });
+  });
+
+  it('useUpdateTeacher ante PartialSaveError invalida las habilitaciones del profesor editado', async () => {
+    updateTeacherMock.mockRejectedValue(new PartialSaveError('t-1', new Error('conflicto')));
+    const { wrapper, invalidateSpy } = setup();
+    const { result } = renderHook(() => useUpdateTeacher(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync({ ...existingTeacher, habilitations: [] }).catch(() => undefined);
+    });
+
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['teacher-habilitations', 't-1'] });
   });
 });

@@ -73,6 +73,7 @@ export function TeachersPage() {
           teacher={editingTeacher}
         />
       </Drawer>
+
     </Box>
   );
 }

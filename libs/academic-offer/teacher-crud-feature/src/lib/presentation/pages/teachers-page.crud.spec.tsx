@@ -4,6 +4,16 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TeachersPage } from './teachers-page';
 import type { Teacher } from '../../domain/entities/teacher';
 
+vi.mock('../../application/use-cases/get-teacher-habilitations', () => ({
+  getTeacherHabilitations: vi.fn(async () => []),
+}));
+vi.mock('../../application/use-cases/get-course-options', () => ({
+  getCourseOptions: vi.fn(async () => []),
+}));
+vi.mock('@react-front/courses-crud-feature', () => ({
+  getCourseSubjects: vi.fn(async () => []),
+}));
+
 const { getTeacherPageMock, createTeacherMock, updateTeacherMock, tableProps } = vi.hoisted(() => ({
   getTeacherPageMock: vi.fn(),
   createTeacherMock: vi.fn(),

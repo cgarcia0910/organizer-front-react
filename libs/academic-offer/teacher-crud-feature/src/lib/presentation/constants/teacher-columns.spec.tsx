@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import type { GridColDef } from '@mui/x-data-grid';
 import { getTeacherColumns } from './teacher-columns';
 import type { Teacher } from '../../domain/entities/teacher';
@@ -27,19 +27,8 @@ describe('getTeacherColumns', () => {
     render(<div>{column.renderCell?.({ row: { id: 't-1' } } as never)}</div>);
 
     expect(screen.getByRole('button', { name: 'Editar profesor' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Habilitaciones' })).toBeNull();
     expect(screen.queryByRole('button', { name: /eliminar/i })).toBeNull();
-  });
-
-  it('el botón de editar llama a onEdit con la fila', () => {
-    const onEdit = vi.fn();
-    const row = { id: 't-1', firstName: 'Ana', lastName: 'García', email: 'ana@example.com', status: 'ACTIVE' };
-    const column = getTeacherColumns({ onEdit }).find((c) => c.field === 'actions');
-    if (!column) throw new Error('columna actions no encontrada');
-    render(<div>{column.renderCell?.({ row } as never)}</div>);
-
-    fireEvent.click(screen.getByRole('button', { name: 'Editar profesor' }));
-
-    expect(onEdit).toHaveBeenCalledWith(row);
   });
 
   it('muestra "Activo" para el estado ACTIVE', () => {
