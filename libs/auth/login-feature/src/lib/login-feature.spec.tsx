@@ -16,12 +16,14 @@ function renderLogin() {
         <Route path="/login" element={<LoginFeature />} />
         <Route path="/" element={<div>Home page</div>} />
       </Routes>
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 
 function fillAndSubmit(email: string, password: string) {
-  fireEvent.change(screen.getByLabelText('Email'), { target: { value: email } });
+  fireEvent.change(screen.getByLabelText('Email'), {
+    target: { value: email },
+  });
   fireEvent.change(screen.getByLabelText('Password'), {
     target: { value: password },
   });
@@ -58,7 +60,7 @@ describe('LoginFeature', () => {
     fillAndSubmit('not-an-email', 'secret');
 
     expect(
-      await screen.findByText('Please enter a valid email address.')
+      await screen.findByText('Please enter a valid email address.'),
     ).toBeTruthy();
     expect(loginMock).not.toHaveBeenCalled();
   });
@@ -90,7 +92,7 @@ describe('LoginFeature', () => {
     fillAndSubmit('user@test.com', 'secret');
 
     expect(
-      await screen.findByText('Something went wrong, try again later')
+      await screen.findByText('Something went wrong, try again later'),
     ).toBeTruthy();
     expect(screen.queryByText('Invalid email or password')).toBeNull();
     expect(screen.queryByText('Home page')).toBeNull();
@@ -111,7 +113,7 @@ describe('LoginFeature', () => {
     loginMock.mockReturnValue(
       new Promise<{ status: 'invalid-credentials' }>((resolve) => {
         resolveLogin = resolve;
-      })
+      }),
     );
     renderLogin();
 
@@ -124,8 +126,8 @@ describe('LoginFeature', () => {
     await waitFor(() =>
       expect(
         (screen.getByRole('button', { name: /sign in/i }) as HTMLButtonElement)
-          .disabled
-      ).toBe(false)
+          .disabled,
+      ).toBe(false),
     );
   });
 });

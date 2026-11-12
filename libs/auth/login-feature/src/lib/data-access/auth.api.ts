@@ -13,10 +13,10 @@ export class AuthApi {
   }
 
   public static whoami() {
-    return fetch('/api/auth/whoami', {method: 'GET'})
+    return fetch('/api/auth/whoami', { method: 'GET' });
   }
 
   public static logout(): Promise<Response> {
-    return fetch('/api/auth/logout', {method: 'POST'})
+    return fetch('/api/auth/logout', { method: 'POST' });
   }
 }

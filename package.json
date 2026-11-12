@@ -8,11 +8,14 @@
   },
   "private": true,
   "dependencies": {
+    "@cgarcia0910/api-academiccatalog": "^2.0.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@hookform/resolvers": "^6.0.2",
     "@mui/icons-material": "^9.5.0",
     "@mui/material": "^9.5.0",
+    "@mui/x-data-grid": "^9.17.0",
+    "@tanstack/react-query": "^5.105.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.91.0",
@@ -66,6 +69,7 @@
   "packageManager": "npm@11.19.0",
   "workspaces": [
     "apps/*",
-    "libs/auth/*"
+    "libs/auth/*",
+    "libs/academic-offer/*"
   ]
 }

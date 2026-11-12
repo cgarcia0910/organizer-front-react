@@ -5,7 +5,6 @@ import { nxReadySignal } from '@nx/vite/plugins/nx-ready-signal.plugin';
 
 // ...
 
-
 export default defineConfig(() => ({
   root: import.meta.dirname,
   cacheDir: '../../node_modules/.vite/apps/react-front',
@@ -14,30 +13,30 @@ export default defineConfig(() => ({
     host: 'localhost',
     proxy: {
       '/api': {
-        target: 'http://172.18.240.1:8080',
-        changeOrigin: true
+        target: 'http://172.23.96.1:8080',
+        changeOrigin: true,
       },
       '/resources': {
-        target: 'http://172.18.240.1:8080',
+        target: 'http://172.23.96.1:8080',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/resources/, '')
-      }
-    }
+        rewrite: (path) => path.replace(/^\/resources/, ''),
+      },
+    },
   },
   preview: {
     port: 4300,
     host: 'localhost',
     proxy: {
       '/api': {
-        target: 'http://172.18.240.1:8080',
-        changeOrigin: true
+        target: 'http://172.23.96.1:8080',
+        changeOrigin: true,
       },
       '/resources': {
-        target: 'http://172.18.240.1:8080',
+        target: 'http://172.23.96.1:8080',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/resources/, '')
-      }
-    }
+        rewrite: (path) => path.replace(/^\/resources/, ''),
+      },
+    },
   },
   plugins: [react(), nxReadySignal()],
   // Uncomment this if you are using workers.

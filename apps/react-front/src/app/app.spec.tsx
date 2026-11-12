@@ -14,7 +14,7 @@ function renderApp(route: string) {
       <AuthProvider>
         <App />
       </AuthProvider>
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 
@@ -33,7 +33,7 @@ describe('App', () => {
   it('renders the login page at /login', () => {
     renderApp('/login');
 
-    expect(screen.getByRole('heading', { name: 'Sign in' }))
+    expect(screen.getByRole('heading', { name: 'Sign in' }));
   });
 
   it('renders the protected home page when there is a token', () => {
@@ -42,6 +42,6 @@ describe('App', () => {
     renderApp('/');
 
     expect(screen.getByText('Home page')).toBeTruthy();
-    expect(screen.queryByRole('heading', { name: 'Sign in'})).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Sign in' })).toBeNull();
   });
 });
