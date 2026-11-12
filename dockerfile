@@ -22,9 +22,11 @@ RUN npx nx build ${APP_NAME}
 # Production stage
 FROM nginx:alpine
 
-COPY nginx/default.conf /etc/nginx/conf.d/default.conf
-
 COPY --from=builder /app/apps/react-front/dist /usr/share/nginx/html
+COPY nginx/templates/default.conf.template /etc/nginx/templates/default.conf.template
+# COPY nginx/default.conf /etc/nginx/conf.d/default.conf
+
+# COPY --from=builder /app/apps/react-front/dist /usr/share/nginx/html
 
 EXPOSE 80
 

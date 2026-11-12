@@ -6,7 +6,7 @@ server {
     index index.html;
 
     location /api/ {
-        proxy_pass https://organizer-java-api-1.onrender.com/api/;
+        proxy_pass ${BACKEND_URL}/api/;
 
         proxy_ssl_server_name on;
         proxy_ssl_name organizer-java-api-1.onrender.com;
@@ -18,7 +18,7 @@ server {
     }
 
     location /resources/ {
-        proxy_pass https://organizer-java-api-1.onrender.com/;
+        proxy_pass ${BACKEND_URL}/;
 
         proxy_ssl_server_name on;
         proxy_ssl_name organizer-java-api-1.onrender.com;
