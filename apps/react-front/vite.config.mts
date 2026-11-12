@@ -2,7 +2,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { nxReadySignal } from '@nx/vite/plugins/nx-ready-signal.plugin';
-
 // ...
 
 export default defineConfig(() => ({
@@ -13,11 +12,11 @@ export default defineConfig(() => ({
     host: 'localhost',
     proxy: {
       '/api': {
-        target: 'http://172.22.112.1:8080',
+        target: 'http://localhost:8080',
         changeOrigin: true,
       },
       '/resources': {
-        target: 'http://172.22.112.1:8080',
+        target: 'http://localhost:8080',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/resources/, ''),
       },
@@ -28,17 +27,21 @@ export default defineConfig(() => ({
     host: 'localhost',
     proxy: {
       '/api': {
-        target: 'http://172.23.96.1:8080',
+        target: 'http://localhost:8080',
         changeOrigin: true,
       },
       '/resources': {
-        target: 'http://172.23.96.1:8080',
+        target: 'http://localhost:8080',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/resources/, ''),
       },
     },
   },
-  plugins: [react(), nxReadySignal()],
+  plugins: [
+    react(),
+    nxReadySignal(),
+  ],
+  // plugins: [react(), nxReadySignal()],
   // Uncomment this if you are using workers.
   // worker: {
   //  plugins: [],

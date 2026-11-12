@@ -1,0 +1,12 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: react-front
+    ports:
+      - "4200:80"
+    extra_hosts:
+    - "host.docker.internal:host-gateway"
+    restart: unless-stopped
